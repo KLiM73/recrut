@@ -3,13 +3,40 @@ if (isset($_POST['createDB']))
 {
     dbCreate();
 }
+
 if (isset($_POST['insertVacancy']))
 {
     dbAddVacancy($_POST['name'], $_POST['description'], $_POST['iniciator'], $_POST['doer']);
 }
+if (isset($_POST['updateVacancy'])){
+    dbUpdateVacancy($_POST['vacancy'], $_POST['name'], $_POST['description'], $_POST['iniciator'], $_POST['doer']);
+}
 if (isset($_POST['deleteVacancy'])) {
     dbDeleteVacancy($_POST['vacancy']);
 }
+
+if (isset($_POST['insertCandidate'])) {
+    $strVacId = '';
+    foreach ($_POST['vacancies'] as $id) {
+        $strVacId .= $id.' ';
+    }
+    dbAddCandidate($_POST['fio'], $_POST['b_date'], $strVacId, $_POST['description'], 1234, $_POST['comments']);
+    echo "\n run \n";
+    echo $strVacId;
+    echo '<pre>';
+    print_r($_POST['vacancies']);
+}
+if (isset($_POST['updateCandidate'])) {
+    $strVacId = '';
+    foreach ($_POST['vacancies'] as $id) {
+        $strVacId .= $id.' ';
+    }
+    dbUpdateCandidate($_POST['candidate'], $_POST['fio'], $_POST['b_date'], $strVacId, $_POST['description'], 1234, $_POST['comments']);
+}
+if (isset($_POST['deleteCandidate'])) {
+    dbDeleteCandidate($_POST['candidates']);
+}
+
 function dbCreate() {
     $host = '127.0.0.1:3306';
     $db = 'uchet';
@@ -49,6 +76,8 @@ candidate_id int(11) NOT NULL,
 status int(1) NOT NULL,
 comments varchar(500) NULL,
 PRIMARY KEY (id))");
+
+    header("Location: http://test");
 }
 
 function dbAddVacancy($name, $desc, $iniciator, $doer) {
@@ -71,11 +100,30 @@ function dbAddVacancy($name, $desc, $iniciator, $doer) {
     } catch (PDOException $e) {
         die('Ошибка: '.$e->getMessage());
     }
-    header("Location: http://test/vacancy/");
+    header("Location: http://test/vacancy");
 }
+function dbUpdateVacancy($id, $name, $desc, $iniciator, $doer) {
+    try {
+        $host = '127.0.0.1:3306';
+        $db = 'uchet';
+        $user = 'root';
+        $pass = '';
+        $charset = 'utf8';
+        $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+        $opt = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ];
+        $pdo = new PDO($dsn, $user, $pass, $opt);
+        $stmt = $pdo->prepare("UPDATE vacancy SET name = :name, description = :description, iniciator = :iniciator, doer = :doer WHERE id = :id;");
+        $stmt->execute(array('name' => $name, 'description' => $desc, 'iniciator' => $iniciator, 'doer' => $doer, 'id' => $id));
 
-function dbEditVacancy() {}
-
+    } catch (PDOException $e) {
+        die('Ошибка: '.$e->getMessage());
+    }
+    header("Location: http://test/vacancy");
+}
 function dbDeleteVacancy($id) {
     $host = '127.0.0.1:3306';
     $db = 'uchet';
@@ -112,4 +160,71 @@ function dbDoTransaction($transaction) {
     $stmt->execute();
     return $stmt;
 }
+
+function dbAddCandidate($fio, $b_date, $vac_id, $desc, $resume, $comments) {
+    try {
+        $host = '127.0.0.1:3306';
+        $db = 'uchet';
+        $user = 'root';
+        $pass = '';
+        $charset = 'utf8';
+        $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+        $opt = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ];
+        $pdo = new PDO($dsn, $user, $pass, $opt);
+
+        $stmt = $pdo->prepare("INSERT INTO candidate(fio, b_date, vac_id, description, resume, comments) VALUES(:fio, :b_date, :vac_id, :description, :resume, :comments)");
+        $stmt->execute(array('fio' => $fio, 'b_date' => $b_date, 'vac_id' => $vac_id, 'description' => $desc, 'resume' => $resume, 'comments' => $comments));
+
+    } catch (PDOException $e) {
+        die('Ошибка: '.$e->getMessage());
+    }
+    header("Location: http://test/candidates");
+}
+
+function dbUpdateCandidate($id, $fio, $b_date, $vac_id, $desc, $resume, $comments) {
+    try {
+        $host = '127.0.0.1:3306';
+        $db = 'uchet';
+        $user = 'root';
+        $pass = '';
+        $charset = 'utf8';
+        $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+        $opt = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ];
+        $pdo = new PDO($dsn, $user, $pass, $opt);
+        $stmt = $pdo->prepare("UPDATE candidate SET fio = :fio, b_date = :b_date, vac_id = :vac_id, description = :description, resume = :resume, comments = :comments WHERE id = :id;");
+        $stmt->execute(array('fio' => $fio, 'b_date' => $b_date, 'vac_id' => $vac_id, 'description' => $desc, 'resume' => $resume, 'comments' => $comments, 'id' => $id));
+
+    } catch (PDOException $e) {
+        die('Ошибка: '.$e->getMessage());
+    }
+    header("Location: http://test/candidates");
+}
+
+function dbDeleteCandidate($id) {
+    $host = '127.0.0.1:3306';
+    $db = 'uchet';
+    $user = 'root';
+    $pass = '';
+    $charset = 'utf8';
+    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+    $opt = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ];
+    $pdo = new PDO($dsn, $user, $pass, $opt);
+
+    $stmt = $pdo->prepare("DELETE FROM candidate WHERE id = ?");
+    $stmt->execute(array($id));
+    header("Location: http://test/candidates/");
+}
+
 ?>

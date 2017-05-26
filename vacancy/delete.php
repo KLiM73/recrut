@@ -15,3 +15,4 @@ require '../template/header.php';
     </select>
     <input type="submit" value="Удалить" name="deleteVacancy">
 </form>
+<? require '../template/footer.php'; ?>

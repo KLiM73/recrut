@@ -1,14 +1,14 @@
 <?
 require '../app/index.php';
-$title = "Вакансии";
+$title = "Кандидаты";
 require '../template/header.php';
 ?>
 
 <div class="content">
-    <div class="vacancyList">
+    <div class="candidateList">
         <ul>
-            <? foreach (dbDoTransaction("SELECT * FROM vacancy") as $row) {
-                echo "<li>".$row['id'].' '.$row['name'].' '.$row['iniciator'].' '.$row['doer'].' '.$row['description']."</li>";
+            <? foreach (dbDoTransaction("SELECT * FROM candidate") as $row) {
+                echo "<li>".$row['id'].' '.$row['fio'].' '.$row['b_date'].' '.$row['description']."</li>";
             }
             ?>
         </ul>

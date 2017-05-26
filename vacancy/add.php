@@ -23,3 +23,4 @@ require '../template/header.php';
 
     <input type="submit" name="insertVacancy" value="Добавить">
 </form>
+<? require '../template/footer.php'; ?>
