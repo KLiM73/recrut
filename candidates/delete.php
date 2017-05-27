@@ -2,6 +2,10 @@
 require '../app/index.php';
 $title = "Удаление кандидата";
 require '../template/header.php';
+
+if (!($_SESSION['group'] == 'Администратор' OR $_SESSION['group'] == 'Менеджер по персоналу')){
+    echo 'У вас нет доступа к этому разделу!';
+} else {
 ?>
 
 <form action="../app/db.php" method="post">
@@ -15,4 +19,6 @@ require '../template/header.php';
     </select>
     <input type="submit" value="Удалить" name="deleteCandidate">
 </form>
-<? require '../template/footer.php'; ?>
+<?
+}
+require '../template/footer.php'; ?>

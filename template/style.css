@@ -1,0 +1,43 @@
+header {
+    background-color: cornflowerblue;
+    color: #fff;
+}
+
+h1 {
+    padding: 20px;
+}
+
+form {
+    padding: 20px;
+}
+
+label {
+    display: inline-block;
+    margin-bottom: 5px;
+}
+
+input, select {
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+textarea {
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+a {
+    color: #000;
+    margin: 5px;
+    display: inline-block;
+    background-color: cornflowerblue;
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 5px;
+    text-transform: uppercase;
+}
+
+ul {
+    list-style: none;
+}

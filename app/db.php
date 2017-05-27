@@ -37,6 +37,13 @@ if (isset($_POST['deleteCandidate'])) {
     dbDeleteCandidate($_POST['candidates']);
 }
 
+if (isset($_POST['viewCandidate'])) {
+    $view = dbDoTransaction('select * from candidate where id = '.$_POST['candidate']);
+    return $view;
+}
+
+
+
 function dbCreate() {
     $host = '127.0.0.1:3306';
     $db = 'uchet';
@@ -77,7 +84,40 @@ status int(1) NOT NULL,
 comments varchar(500) NULL,
 PRIMARY KEY (id))");
 
+        $stmt3 = $pdo->query("CREATE TABLE users(
+id int(11) NOT NULL AUTO_INCREMENT,
+name varchar(45) NOT NULL,
+groups varchar(10) NULL,
+PRIMAY KEY (id))");
+
+        $stmt4 = $pdo->query("insert into users(name, password, groups) values('admin', 'admin', '0')");
+
     header("Location: http://test");
+}
+
+function userLogin($name) {
+    try {
+        $host = '127.0.0.1:3306';
+        $db = 'uchet';
+        $user = 'root';
+        $pass = '';
+        $charset = 'utf8';
+        $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+        $opt = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ];
+        $pdo = new PDO($dsn, $user, $pass, $opt);
+        $stmt = $pdo->prepare("select * from users where name = :name");
+        $stmt->execute(array('name' => $name));
+        foreach ($stmt as $row) {
+            return $row;
+            break;
+        }
+    } catch (PDOException $e) {
+        return NULL;
+    }
 }
 
 function dbAddVacancy($name, $desc, $iniciator, $doer) {
@@ -184,7 +224,6 @@ function dbAddCandidate($fio, $b_date, $vac_id, $desc, $resume, $comments) {
     }
     header("Location: http://test/candidates");
 }
-
 function dbUpdateCandidate($id, $fio, $b_date, $vac_id, $desc, $resume, $comments) {
     try {
         $host = '127.0.0.1:3306';
@@ -207,7 +246,6 @@ function dbUpdateCandidate($id, $fio, $b_date, $vac_id, $desc, $resume, $comment
     }
     header("Location: http://test/candidates");
 }
-
 function dbDeleteCandidate($id) {
     $host = '127.0.0.1:3306';
     $db = 'uchet';
