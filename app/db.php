@@ -21,10 +21,7 @@ if (isset($_POST['insertCandidate'])) {
         $strVacId .= $id.' ';
     }
     dbAddCandidate($_POST['fio'], $_POST['b_date'], $strVacId, $_POST['description'], 1234, $_POST['comments']);
-    echo "\n run \n";
-    echo $strVacId;
-    echo '<pre>';
-    print_r($_POST['vacancies']);
+    dbAddVacancyEvent($_POST['vacancies'], date('Y-m-d'));
 }
 if (isset($_POST['updateCandidate'])) {
     $strVacId = '';
@@ -41,7 +38,9 @@ if (isset($_POST['viewCandidate'])) {
     $view = dbDoTransaction('select * from candidate where id = '.$_POST['candidate']);
     return $view;
 }
-
+if (isset($_POST['userAdd'])) {
+    userAdd($_POST['name'], $_POST['password'], $_POST['userGroup']);
+}
 
 
 function dbCreate() {
@@ -118,6 +117,23 @@ function userLogin($name) {
     } catch (PDOException $e) {
         return NULL;
     }
+}
+function userAdd($name, $password, $userGroup) {
+    $host = '127.0.0.1:3306';
+    $db = 'uchet';
+    $user = 'root';
+    $pass = '';
+    $charset = 'utf8';
+    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+    $opt = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ];
+    $pdo = new PDO($dsn, $user, $pass, $opt);
+    $stmt = $pdo->prepare("insert into users(name, password, userGroup) values(:name, :password, :userGroup)");
+    $stmt->execute(array('name' => $name, 'password' => $password, 'userGroup' => $userGroup));
+    header('Location: http://test/users');
 }
 
 function dbAddVacancy($name, $desc, $iniciator, $doer) {
@@ -265,4 +281,20 @@ function dbDeleteCandidate($id) {
     header("Location: http://test/candidates/");
 }
 
+function dbAddVacancyEvent($vac_id, $date) {
+    $host = '127.0.0.1:3306';
+    $db = 'uchet';
+    $user = 'root';
+    $pass = '';
+    $charset = 'utf8';
+    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+    $opt = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ];
+    $pdo = new PDO($dsn, $user, $pass, $opt);
+    $stmt = $pdo->prepare("INSERT INTO vacancyEvent(date, vacancy_id, candidate_id, status) VALUES(:date, :vacancy_id, :candidate_id, :status)");
+    $stmt->execute(array('date' => $date, 'vacancy_id' => $vac_id, 'candidate_id' => $candidate_id, 'status' => 'Резюме просматривалось'));
+}
 ?>

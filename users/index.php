@@ -16,11 +16,25 @@ require '../template/header.php';
         <?
         if ($_SESSION['group'] == 'Администратор') {
             ?>
-            <form>
-                <label>Добавление пользователя:</label>
+            <form method="post" action="../app/db.php">
+                <label>Добавление пользователя:</label><br>
 
-                <label for="login">Логин:</label>
-                <input id="login">
+                <label for="name">Логин:</label><br>
+                <input id="name" name="name"><br>
+
+                <label for="password">Пароль:</label><br>
+                <input id="password" name="password"><br>
+
+                <label for="userGroup">Группа пользователя:</label><br>
+                <select id="userGroup" name="userGroup">
+                    <?
+                    foreach ($GLOBALS['userGroups'] as $group) {
+                        echo '<option value="'.$group.'">'.$group.'</option>';
+                    }
+                    ?>
+                </select><br>
+
+                <input type="submit" name="userAdd" value="Добавить">
             </form>
             <?
         }
