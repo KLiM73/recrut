@@ -9,7 +9,7 @@ if (isset($_POST['insertVacancy']))
     dbAddVacancy($_POST['name'], $_POST['description'], $_POST['iniciator'], $_POST['doer']);
 }
 if (isset($_POST['updateVacancy'])){
-    dbUpdateVacancy($_POST['vacancy'], $_POST['name'], $_POST['description'], $_POST['iniciator'], $_POST['doer']);
+    dbUpdateVacancy($_POST['id'], $_POST['name'], $_POST['description'], $_POST['iniciator'], $_POST['doer']);
 }
 if (isset($_POST['deleteVacancy'])) {
     dbDeleteVacancy($_POST['vacancy']);
@@ -21,14 +21,22 @@ if (isset($_POST['insertCandidate'])) {
         $strVacId .= $id.' ';
     }
     dbAddCandidate($_POST['fio'], $_POST['b_date'], $strVacId, $_POST['description'], 1234, $_POST['comments']);
-    dbAddVacancyEvent($_POST['vacancies'], date('Y-m-d'));
+
+    foreach (dbDoTransaction('select * from candidate where fio = "'.$_POST['fio'].'" and b_date = "'.$_POST['b_date'].'";') as $row) {
+        $can = $row['id'];
+        break;
+    }
+    foreach ($_POST['vacancies'] as $vac) {
+        dbAddVacancyEvent($vac, date('Y-m-d'), $can);
+    }
+    header("Location: http://test/candidates");
 }
 if (isset($_POST['updateCandidate'])) {
     $strVacId = '';
     foreach ($_POST['vacancies'] as $id) {
         $strVacId .= $id.' ';
     }
-    dbUpdateCandidate($_POST['candidate'], $_POST['fio'], $_POST['b_date'], $strVacId, $_POST['description'], 1234, $_POST['comments']);
+    dbUpdateCandidate($_POST['id'], $_POST['fio'], $_POST['b_date'], $strVacId, $_POST['description'], 1234, $_POST['comments']);
 }
 if (isset($_POST['deleteCandidate'])) {
     dbDeleteCandidate($_POST['candidates']);
@@ -39,23 +47,27 @@ if (isset($_POST['viewCandidate'])) {
     return $view;
 }
 if (isset($_POST['userAdd'])) {
-    userAdd($_POST['name'], $_POST['password'], $_POST['userGroup']);
+    userAdd($_POST['login'], $_POST['fio'], $_POST['password'], $_POST['userGroup']);
+}
+if (isset($_POST['userEdit'])) {
+    userUpdate($_POST['id'], $_POST['login'], $_POST['password'], $_POST['userGroup'], $_POST['fio']);
 }
 
 
 function dbCreate() {
-    $host = '127.0.0.1:3306';
-    $db = 'uchet';
-    $user = 'root';
-    $pass = '';
-    $charset = 'utf8';
-    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-    $opt = [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false,
-    ];
-    $pdo = new PDO($dsn, $user, $pass, $opt);
+    try {
+        $host = '127.0.0.1:3306';
+        $db = 'uchet';
+        $user = 'root';
+        $pass = '';
+        $charset = 'utf8';
+        $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+        $opt = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ];
+        $pdo = new PDO($dsn, $user, $pass, $opt);
 
         $stmt = $pdo->query("CREATE TABLE vacancy(
 id int(11) NOT NULL AUTO_INCREMENT, 
@@ -77,21 +89,29 @@ PRIMARY KEY (id))");
 
         $stmt2 = $pdo->query("CREATE TABLE vacancyEvent(
 id int(11) NOT NULL AUTO_INCREMENT,
+date DATE NOT NULL,
 vacancy_id int(11) NOT NULL,
 candidate_id int(11) NOT NULL,
-status int(1) NOT NULL,
+status varchar(50) NOT NULL,
 comments varchar(500) NULL,
 PRIMARY KEY (id))");
 
         $stmt3 = $pdo->query("CREATE TABLE users(
 id int(11) NOT NULL AUTO_INCREMENT,
-name varchar(45) NOT NULL,
-groups varchar(10) NULL,
-PRIMAY KEY (id))");
+login varchar(45) NOT NULL,
+fio varchar(60) NOT NULL,
+password varchar(45) NOT NULL,
+userGroup varchar(30) NULL,
+PRIMARY KEY (id))");
 
-        $stmt4 = $pdo->query("insert into users(name, password, groups) values('admin', 'admin', '0')");
-
-    header("Location: http://test");
+        $stmt4 = $pdo->query("insert into users(login, password, fio, userGroup) values('admin', 'admin', 'Администратор', 'Администратор')");
+        header('Location: http://test');
+    }
+    catch (PDOException $e) {
+        echo $e->getMessage();
+        echo 'Таблицы уже созданы!';
+        require '../template/footer.php';
+    }
 }
 
 function userLogin($name) {
@@ -108,8 +128,8 @@ function userLogin($name) {
             PDO::ATTR_EMULATE_PREPARES => false,
         ];
         $pdo = new PDO($dsn, $user, $pass, $opt);
-        $stmt = $pdo->prepare("select * from users where name = :name");
-        $stmt->execute(array('name' => $name));
+        $stmt = $pdo->prepare("select * from users where login = :login");
+        $stmt->execute(array('login' => $name));
         foreach ($stmt as $row) {
             return $row;
             break;
@@ -118,7 +138,7 @@ function userLogin($name) {
         return NULL;
     }
 }
-function userAdd($name, $password, $userGroup) {
+function userAdd($login, $fio, $password, $userGroup) {
     $host = '127.0.0.1:3306';
     $db = 'uchet';
     $user = 'root';
@@ -131,9 +151,50 @@ function userAdd($name, $password, $userGroup) {
         PDO::ATTR_EMULATE_PREPARES => false,
     ];
     $pdo = new PDO($dsn, $user, $pass, $opt);
-    $stmt = $pdo->prepare("insert into users(name, password, userGroup) values(:name, :password, :userGroup)");
-    $stmt->execute(array('name' => $name, 'password' => $password, 'userGroup' => $userGroup));
+    $stmt = $pdo->prepare("insert into users(login, password, fio, userGroup) values(:login, :password, :fio, :userGroup)");
+    $stmt->execute(array('login' => $login, 'password' => $password, 'fio' => $fio, 'userGroup' => $userGroup));
     header('Location: http://test/users');
+}
+function userUpdate($id, $login, $password, $userGroup, $fio) {
+    try {
+        $host = '127.0.0.1:3306';
+        $db = 'uchet';
+        $user = 'root';
+        $pass = '';
+        $charset = 'utf8';
+        $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+        $opt = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ];
+        $pdo = new PDO($dsn, $user, $pass, $opt);
+        $stmt = $pdo->prepare("UPDATE users SET login = :login, password = :password, fio = :fio, userGroup = :userGroup WHERE id = :id;");
+        $stmt->execute(array('id' => $id, 'login' => $login, 'password' => $password, 'fio' => $fio, 'userGroup' => $userGroup));
+        header("Location: http://test/users");
+
+    } catch (PDOException $e) {
+        die('Ошибка: '.$e->getMessage());
+    }
+
+}
+function userDelete($id) {
+    $host = '127.0.0.1:3306';
+    $db = 'uchet';
+    $user = 'root';
+    $pass = '';
+    $charset = 'utf8';
+    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+    $opt = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ];
+    $pdo = new PDO($dsn, $user, $pass, $opt);
+
+    $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+    $stmt->execute(array($id));
+    header("Location: http://test/users/");
 }
 
 function dbAddVacancy($name, $desc, $iniciator, $doer) {
@@ -238,7 +299,7 @@ function dbAddCandidate($fio, $b_date, $vac_id, $desc, $resume, $comments) {
     } catch (PDOException $e) {
         die('Ошибка: '.$e->getMessage());
     }
-    header("Location: http://test/candidates");
+
 }
 function dbUpdateCandidate($id, $fio, $b_date, $vac_id, $desc, $resume, $comments) {
     try {
@@ -281,7 +342,7 @@ function dbDeleteCandidate($id) {
     header("Location: http://test/candidates/");
 }
 
-function dbAddVacancyEvent($vac_id, $date) {
+function dbAddVacancyEvent($vac_id, $date, $candidate_id) {
     $host = '127.0.0.1:3306';
     $db = 'uchet';
     $user = 'root';

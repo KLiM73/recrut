@@ -26,6 +26,7 @@ if(!$_SESSION['login']) {
     <?
     if($_SESSION['login']) {
         echo '<h2>Здравствуйте, '.$_SESSION['login'].'! <a href="http://'.$_SERVER['HTTP_HOST'].'?do=logout">Выйти</a></h2>';
+        echo '<h2>Ваша группа: '.$_SESSION['group'].'</h2>';
     }
     ?>
 </header>

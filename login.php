@@ -6,7 +6,7 @@ require './app/db.php';
 $message = '';
 if (isset($_POST['userLogin'])) {
     $user = userLogin($_POST['login']);
-    if ($user['name'] == $_POST['login'] AND $user['password'] == $_POST['password']) {
+    if ($user['login'] == $_POST['login'] AND $user['password'] == $_POST['password']) {
         $_SESSION['login'] = $_POST['login'];
         $_SESSION['group'] = $user['userGroup'];
         header('Location: http://test/');
@@ -36,5 +36,8 @@ if(@$_SESSION['login']) {
     <input type="password" name="password" id="password"><br>
     <span id="answer"><? echo $message; ?></span><br>
     <input type="submit" name="userLogin" value="Вход">
-    <input type="submit" name="userRegister" value="Регистрация">
+</form>
+
+<form action="./app/db.php" method="post">
+    <input type="submit" name="createDB" value="Создать таблицы">
 </form>

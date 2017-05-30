@@ -16,8 +16,7 @@ foreach (dbDoTransaction('SELECT * FROM candidate') as $row) {
 <div class="menu">
     <ul>
         <?
-        if (!($_SESSION['group'] == 'Администратор' OR $_SESSION['group'] == 'Менеджер по персоналу')){}
-        else {
+        if (($_SESSION['group'] == 'Администратор' OR $_SESSION['group'] == 'Менеджер по персоналу')){
         ?>
         <li><a href="./vacancy/">Вакансии (<? echo $GLOBALS['countVacancies']; ?>)</a></li>
         <li><a href="./candidates/">Кандидаты (<? echo $GLOBALS['countCandidates']; ?>)</a></li>
@@ -27,9 +26,6 @@ foreach (dbDoTransaction('SELECT * FROM candidate') as $row) {
 </div>
 </div>
 <footer>
-    <form action="./app/db.php" method="post">
-        <input type="submit" name="createDB" value="Создать таблицы">
-    </form>
 </footer>
 </body>
 </html>
