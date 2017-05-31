@@ -20,6 +20,7 @@ foreach (dbDoTransaction('SELECT * FROM candidate') as $row) {
         ?>
         <li><a href="./vacancy/">Вакансии (<? echo $GLOBALS['countVacancies']; ?>)</a></li>
         <li><a href="./candidates/">Кандидаты (<? echo $GLOBALS['countCandidates']; ?>)</a></li>
+        <li><a href="./events/">События</a></li>
         <? } ?>
         <li><a href="./users/">Пользователи и группы</a></li>
     </ul>

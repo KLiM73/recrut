@@ -1,4 +1,5 @@
 <?
+$GLOBALS['domain'] = 'http://test';
 session_start();
 if($_GET) {
     if (@$_GET['do'] == 'logout') {
@@ -17,16 +18,16 @@ if(!$_SESSION['login']) {
 <html>
 <head>
     <title><? echo $title; ?></title>
-    <link rel="stylesheet" href="http://test/template/style.css">
+    <link rel="stylesheet" href="<? echo $GLOBALS['domain']; ?>/template/style.css">
 </head>
 <body>
-<header>
-    <h1><? echo $title; ?></h1>
-
+<header class="clearfix">
+    <h1 class="logo"><? echo $title; ?></h1>
+    <div class="nameGroup clearfix">
     <?
     if($_SESSION['login']) {
-        echo '<h2>Здравствуйте, '.$_SESSION['login'].'! <a href="http://'.$_SERVER['HTTP_HOST'].'?do=logout">Выйти</a></h2>';
-        echo '<h2>Ваша группа: '.$_SESSION['group'].'</h2>';
+        echo '<h2 class="name">Здравствуйте, '.$_SESSION['fio'].'! <a href="http://'.$_SERVER['HTTP_HOST'].'?do=logout">Выйти</a></h2>';
+        echo '<h2 class="group">Ваша группа: '.$_SESSION['group'].'</h2>';
     }
-    ?>
+    ?></div>
 </header>

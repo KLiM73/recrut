@@ -9,6 +9,7 @@ if (isset($_POST['userLogin'])) {
     if ($user['login'] == $_POST['login'] AND $user['password'] == $_POST['password']) {
         $_SESSION['login'] = $_POST['login'];
         $_SESSION['group'] = $user['userGroup'];
+        $_SESSION['fio'] = $user['fio'];
         header('Location: http://test/');
         exit;
     } else $message = 'Неверный логин или пароль!';

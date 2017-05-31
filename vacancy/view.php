@@ -12,15 +12,29 @@ if (!($_SESSION['group'] == 'Администратор' OR $_SESSION['group'] =
     echo 'У вас нет доступа к этому разделу!';
 } else {
     ?>
-
-    <div>
-        <span>ID: <? echo $vac['id']; ?></span><br>
-        <span>Название: <? echo $vac['name']; ?></span><br>
-        <span>Описание: <? echo $vac['description']; ?></span><br>
-        <span>Инициатор: <? echo $vac['iniciator']; ?></span><br>
-        <span>Исполнитель: <? echo $vac['doer']; ?></span><br>
-    </div>
-
+    <table>
+        <tr>
+            <td>ID</td>
+            <td><? echo $vac['id']; ?></td>
+        </tr>
+        <tr>
+            <td>Название</td>
+            <td><? echo $vac['name']; ?></td>
+        </tr>
+        <tr>
+            <td>Описание</td>
+            <td><? echo $vac['description']; ?></td>
+        </tr>
+        <tr>
+            <td>Инициатор</td>
+            <td><? foreach (dbDoTransaction('select fio from users where id = '.$vac['iniciator']) as $row) { echo $row['fio']; } ?></td>
+        </tr>
+        <tr>
+            <td>Исполнитель</td>
+            <td><? foreach (dbDoTransaction('select fio from users where id = '.$vac['doer']) as $row) { echo $row['fio']; } ?></td>
+        </tr>
+    </table>
+    <a href="edit.php?id=<? echo $_GET['id']; ?>">Изменить</a>
     <?
 }
 require '../template/footer.php';?>

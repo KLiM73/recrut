@@ -11,46 +11,42 @@ if (isset($_POST['insertVacancy']))
 if (isset($_POST['updateVacancy'])){
     dbUpdateVacancy($_POST['id'], $_POST['name'], $_POST['description'], $_POST['iniciator'], $_POST['doer']);
 }
-if (isset($_POST['deleteVacancy'])) {
-    dbDeleteVacancy($_POST['vacancy']);
-}
 
 if (isset($_POST['insertCandidate'])) {
-    $strVacId = '';
-    foreach ($_POST['vacancies'] as $id) {
-        $strVacId .= $id.' ';
-    }
-    dbAddCandidate($_POST['fio'], $_POST['b_date'], $strVacId, $_POST['description'], 1234, $_POST['comments']);
-
-    foreach (dbDoTransaction('select * from candidate where fio = "'.$_POST['fio'].'" and b_date = "'.$_POST['b_date'].'";') as $row) {
-        $can = $row['id'];
+    dbAddCandidate($_POST['fio'], $_POST['b_date'], $_POST['description'], $_POST['comments']);
+    echo 'select * from candidate where fio = "'.$_POST['fio'].'";';
+    foreach (dbDoTransaction('select * from candidate where fio = "'.$_POST['fio'].'";') as $row) {
+        $id = $row['id'];
         break;
     }
-    foreach ($_POST['vacancies'] as $vac) {
-        dbAddVacancyEvent($vac, date('Y-m-d'), $can);
+    if(is_uploaded_file($_FILES['resume']['tmp_name'])) {
+        move_uploaded_file($_FILES['resume']['tmp_name'], '/home/klim/Projects/test/resume/'.$id);
     }
     header("Location: http://test/candidates");
 }
 if (isset($_POST['updateCandidate'])) {
-    $strVacId = '';
-    foreach ($_POST['vacancies'] as $id) {
-        $strVacId .= $id.' ';
+    dbUpdateCandidate($_POST['id'], $_POST['fio'], $_POST['b_date'], $_POST['description'], $_POST['id'], $_POST['comments']);
+    if(is_uploaded_file($_FILES['resume']['tmp_name'])) {
+        move_uploaded_file($_FILES['resume']['tmp_name'], '/home/klim/Projects/test/resume/'.$_POST['id']);
     }
-    dbUpdateCandidate($_POST['id'], $_POST['fio'], $_POST['b_date'], $strVacId, $_POST['description'], 1234, $_POST['comments']);
-}
-if (isset($_POST['deleteCandidate'])) {
-    dbDeleteCandidate($_POST['candidates']);
+    echo $_FILES['resume']['name'];
+    header("Location: http://test/candidates");
 }
 
-if (isset($_POST['viewCandidate'])) {
-    $view = dbDoTransaction('select * from candidate where id = '.$_POST['candidate']);
-    return $view;
-}
 if (isset($_POST['userAdd'])) {
     userAdd($_POST['login'], $_POST['fio'], $_POST['password'], $_POST['userGroup']);
 }
 if (isset($_POST['userEdit'])) {
     userUpdate($_POST['id'], $_POST['login'], $_POST['password'], $_POST['userGroup'], $_POST['fio']);
+}
+
+if (isset($_POST['insertVacancyEvent'])) {
+    dbAddVacancyEvent($_POST['vacancy_id'], $_POST['date'], $_POST['candidate_id'], $_POST['status'], $_POST['comments']);
+    header('Location: '.$GLOBALS['domain'].'/events');
+}
+if (isset($_POST['updateVacancyEvent'])) {
+    dbUpdateVacancyEvent($_POST['id'], $_POST['date'], $_POST['vacancy_id'], $_POST['candidate_id'], $_POST['status'], $_POST['comments']);
+    header('Location: '.$GLOBALS['domain'].'/events');
 }
 
 
@@ -278,7 +274,7 @@ function dbDoTransaction($transaction) {
     return $stmt;
 }
 
-function dbAddCandidate($fio, $b_date, $vac_id, $desc, $resume, $comments) {
+function dbAddCandidate($fio, $b_date, $desc, $comments) {
     try {
         $host = '127.0.0.1:3306';
         $db = 'uchet';
@@ -293,15 +289,15 @@ function dbAddCandidate($fio, $b_date, $vac_id, $desc, $resume, $comments) {
         ];
         $pdo = new PDO($dsn, $user, $pass, $opt);
 
-        $stmt = $pdo->prepare("INSERT INTO candidate(fio, b_date, vac_id, description, resume, comments) VALUES(:fio, :b_date, :vac_id, :description, :resume, :comments)");
-        $stmt->execute(array('fio' => $fio, 'b_date' => $b_date, 'vac_id' => $vac_id, 'description' => $desc, 'resume' => $resume, 'comments' => $comments));
+        $stmt = $pdo->prepare("INSERT INTO candidate(fio, b_date, description, comments) VALUES(:fio, :b_date, :description, :comments)");
+        $stmt->execute(array('fio' => $fio, 'b_date' => $b_date, 'description' => $desc, 'comments' => $comments));
 
     } catch (PDOException $e) {
         die('Ошибка: '.$e->getMessage());
     }
 
 }
-function dbUpdateCandidate($id, $fio, $b_date, $vac_id, $desc, $resume, $comments) {
+function dbUpdateCandidate($id, $fio, $b_date, $desc, $resume, $comments) {
     try {
         $host = '127.0.0.1:3306';
         $db = 'uchet';
@@ -315,13 +311,12 @@ function dbUpdateCandidate($id, $fio, $b_date, $vac_id, $desc, $resume, $comment
             PDO::ATTR_EMULATE_PREPARES => false,
         ];
         $pdo = new PDO($dsn, $user, $pass, $opt);
-        $stmt = $pdo->prepare("UPDATE candidate SET fio = :fio, b_date = :b_date, vac_id = :vac_id, description = :description, resume = :resume, comments = :comments WHERE id = :id;");
-        $stmt->execute(array('fio' => $fio, 'b_date' => $b_date, 'vac_id' => $vac_id, 'description' => $desc, 'resume' => $resume, 'comments' => $comments, 'id' => $id));
+        $stmt = $pdo->prepare("UPDATE candidate SET fio = :fio, b_date = :b_date, description = :description, resume = :resume, comments = :comments WHERE id = :id;");
+        $stmt->execute(array('fio' => $fio, 'b_date' => $b_date, 'description' => $desc, 'resume' => $resume, 'comments' => $comments, 'id' => $id));
 
     } catch (PDOException $e) {
         die('Ошибка: '.$e->getMessage());
     }
-    header("Location: http://test/candidates");
 }
 function dbDeleteCandidate($id) {
     $host = '127.0.0.1:3306';
@@ -342,7 +337,7 @@ function dbDeleteCandidate($id) {
     header("Location: http://test/candidates/");
 }
 
-function dbAddVacancyEvent($vac_id, $date, $candidate_id) {
+function dbAddVacancyEvent($vac_id, $date, $candidate_id, $status, $comments) {
     $host = '127.0.0.1:3306';
     $db = 'uchet';
     $user = 'root';
@@ -355,7 +350,42 @@ function dbAddVacancyEvent($vac_id, $date, $candidate_id) {
         PDO::ATTR_EMULATE_PREPARES => false,
     ];
     $pdo = new PDO($dsn, $user, $pass, $opt);
-    $stmt = $pdo->prepare("INSERT INTO vacancyEvent(date, vacancy_id, candidate_id, status) VALUES(:date, :vacancy_id, :candidate_id, :status)");
-    $stmt->execute(array('date' => $date, 'vacancy_id' => $vac_id, 'candidate_id' => $candidate_id, 'status' => 'Резюме просматривалось'));
+    $stmt = $pdo->prepare("INSERT INTO vacancyEvent(date, vacancy_id, candidate_id, status, comments) VALUES(:date, :vacancy_id, :candidate_id, :status, :comments)");
+    $stmt->execute(array('date' => $date, 'vacancy_id' => $vac_id, 'candidate_id' => $candidate_id, 'status' => $status, 'comments' => $comments));
+}
+function dbUpdateVacancyEvent($id, $date, $vacancy_id, $candidate_id, $status, $comments) {
+    $host = '127.0.0.1:3306';
+    $db = 'uchet';
+    $user = 'root';
+    $pass = '';
+    $charset = 'utf8';
+    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+    $opt = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ];
+    $pdo = new PDO($dsn, $user, $pass, $opt);
+    $stmt = $pdo->prepare("UPDATE vacancyEvent SET date = :date, vacancy_id = :vacancy_id, candidate_id = :candidate_id, status = :status, comments = :comments WHERE id = :id;");
+    $stmt->execute(array('id' => $id, 'date' => $date, 'vacancy_id' => $vacancy_id, 'candidate_id' => $candidate_id, 'status' => $status, 'comments' => $comments));
+
+}
+function dbDeleteVacancyEvent($id) {
+    $host = '127.0.0.1:3306';
+    $db = 'uchet';
+    $user = 'root';
+    $pass = '';
+    $charset = 'utf8';
+    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+    $opt = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ];
+    $pdo = new PDO($dsn, $user, $pass, $opt);
+
+    $stmt = $pdo->prepare("DELETE FROM vacancyEvent WHERE id = ?");
+    $stmt->execute(array($id));
+    header("Location: http://test/events/");
 }
 ?>

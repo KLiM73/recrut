@@ -46,6 +46,8 @@ $GLOBALS['userGroups'] = array (
     'Пользователь'
 );
 
+
+
 class User {
     public $LOGIN;
 }
