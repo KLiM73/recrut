@@ -1,5 +1,19 @@
 <?
 require '../app/index.php';
+$message = '';
+if (isset($_POST['updateCandidate'])) {
+    if (empty($_POST['fio'])) {
+        $message = "Форма заполнена неверно!";
+    } else {
+
+        dbUpdateCandidate($_POST['id'], $_POST['fio'], $_POST['b_date'], $_POST['description'], $_POST['id'], $_POST['comments']);
+        if (is_uploaded_file($_FILES['resume']['tmp_name'])) {
+            move_uploaded_file($_FILES['resume']['tmp_name'], '/home/klim/Projects/test/resume/' . $_POST['id']);
+        }
+        echo $_FILES['resume']['name'];
+        header("Location: http://test/candidates");
+    }
+}
 
 foreach (dbDoTransaction('select * from candidate where id = '.$_GET['id']) as $row) {
     $candidate = $row;
@@ -14,7 +28,7 @@ if (!($_SESSION['group'] == 'Администратор' OR $_SESSION['group'] =
 } else {
     ?>
 
-    <form action="../app/db.php" method="post" enctype="multipart/form-data">
+    <form action="" method="post" enctype="multipart/form-data">
         <input type="hidden" name="id" value="<? echo $_GET['id']; ?>">
 
         <table>
@@ -63,9 +77,10 @@ if (!($_SESSION['group'] == 'Администратор' OR $_SESSION['group'] =
                 <td><textarea name="comments" id="comments"><? echo $candidate['comments']; ?></textarea></td>
             </tr>
         </table>
-
+        <span id="answer"><? echo $message; ?></span><br><br>
         <input type="submit" name="updateCandidate" value="Сохранить">
     </form>
+    <a href="index.php">К кандидатам</a>
     <?
 }
 require '../template/footer.php'; ?>

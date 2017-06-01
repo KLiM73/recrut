@@ -51,6 +51,7 @@ if (!($_SESSION['group'] == 'Администратор' OR $_SESSION['group'] =
 
         <input type="submit" name="insertVacancyEvent" value="Добавить">
     </form>
+    <a href="index.php">К событиям</a>
     <?
 }
 require '../template/footer.php'; ?>

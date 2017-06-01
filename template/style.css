@@ -71,3 +71,8 @@ ul {
     clear: both;
     display: block;
 }
+
+#answer {
+    color: #ff0000;
+    font-weight: bold;
+}

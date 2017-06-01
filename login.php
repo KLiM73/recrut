@@ -35,7 +35,7 @@ if(@$_SESSION['login']) {
     <input name="login" id="login" type="text"><br>
     <label for="password">Пароль:</label><br>
     <input type="password" name="password" id="password"><br>
-    <span id="answer"><? echo $message; ?></span><br>
+    <span id="answer"><? echo $message; ?></span><br><br>
     <input type="submit" name="userLogin" value="Вход">
 </form>
 

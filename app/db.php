@@ -4,34 +4,11 @@ if (isset($_POST['createDB']))
     dbCreate();
 }
 
-if (isset($_POST['insertVacancy']))
-{
-    dbAddVacancy($_POST['name'], $_POST['description'], $_POST['iniciator'], $_POST['doer']);
-}
-if (isset($_POST['updateVacancy'])){
-    dbUpdateVacancy($_POST['id'], $_POST['name'], $_POST['description'], $_POST['iniciator'], $_POST['doer']);
-}
 
-if (isset($_POST['insertCandidate'])) {
-    dbAddCandidate($_POST['fio'], $_POST['b_date'], $_POST['description'], $_POST['comments']);
-    echo 'select * from candidate where fio = "'.$_POST['fio'].'";';
-    foreach (dbDoTransaction('select * from candidate where fio = "'.$_POST['fio'].'";') as $row) {
-        $id = $row['id'];
-        break;
-    }
-    if(is_uploaded_file($_FILES['resume']['tmp_name'])) {
-        move_uploaded_file($_FILES['resume']['tmp_name'], '/home/klim/Projects/test/resume/'.$id);
-    }
-    header("Location: http://test/candidates");
-}
-if (isset($_POST['updateCandidate'])) {
-    dbUpdateCandidate($_POST['id'], $_POST['fio'], $_POST['b_date'], $_POST['description'], $_POST['id'], $_POST['comments']);
-    if(is_uploaded_file($_FILES['resume']['tmp_name'])) {
-        move_uploaded_file($_FILES['resume']['tmp_name'], '/home/klim/Projects/test/resume/'.$_POST['id']);
-    }
-    echo $_FILES['resume']['name'];
-    header("Location: http://test/candidates");
-}
+
+
+
+
 
 if (isset($_POST['userAdd'])) {
     userAdd($_POST['login'], $_POST['fio'], $_POST['password'], $_POST['userGroup']);

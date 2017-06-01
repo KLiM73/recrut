@@ -8,12 +8,22 @@ foreach (dbDoTransaction('select * from vacancy where id = '.$_GET['id']) as $ro
 $title = "Изменение вакансии ".$vacancy['name'];
 require '../template/header.php';
 
+$message = '';
+if (isset($_POST['updateVacancy'])){
+    if (empty($_POST['name'])) {
+        $message = 'Неверно заполнена форма!';
+    } else {
+        dbUpdateVacancy($_POST['id'], $_POST['name'], $_POST['description'], $_POST['iniciator'], $_POST['doer']);
+    }
+}
+
+
 if (!($_SESSION['group'] == 'Администратор' OR $_SESSION['group'] == 'Менеджер по персоналу')){
     echo 'У вас нет доступа к этому разделу!';
 } else {
     ?>
 
-    <form action="../app/db.php" method="post">
+    <form action="" method="post">
         <input type="hidden"  name="id" value="<? echo $_GET['id']; ?>">
 
         <table>
@@ -54,8 +64,10 @@ if (!($_SESSION['group'] == 'Администратор' OR $_SESSION['group'] =
                     </select></td>
             </tr>
         </table>
+        <span id="answer"><? echo $message; ?></span><br><br>
         <input type="submit" name="updateVacancy" value="Сохранить">
     </form>
+    <a href="index.php">К вакансиям</a>
     <?
 }
 require '../template/footer.php'; ?>

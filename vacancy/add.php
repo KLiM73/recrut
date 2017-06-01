@@ -2,13 +2,23 @@
 require '../app/index.php';
 $title = "Добавление вакансии";
 require '../template/header.php';
+$message = '';
+if (isset($_POST['insertVacancy']))
+{
+    if (empty($_POST['name'])) {
+        $message = 'Форма заполнена неверно!';
+    } else {
+        dbAddVacancy($_POST['name'], $_POST['description'], $_POST['iniciator'], $_POST['doer']);
+    }
+}
+
 
 if (!($_SESSION['group'] == 'Администратор' OR $_SESSION['group'] == 'Менеджер по персоналу')){
     echo 'У вас нет доступа к этому разделу!';
 } else {
     ?>
 
-    <form action="../app/db.php" method="post">
+    <form action="" method="post">
         <table>
             <tr>
                 <td><label for="name">Название</label></td>
@@ -39,8 +49,10 @@ if (!($_SESSION['group'] == 'Администратор' OR $_SESSION['group'] =
                     </select></td>
             </tr>
         </table>
+        <span id="answer"><? echo $message; ?></span><br><br>
         <input type="submit" name="insertVacancy" value="Добавить">
     </form>
+    <a href="index.php">К вакансиям</a>
     <?
 }
 require '../template/footer.php'; ?>

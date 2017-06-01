@@ -64,6 +64,7 @@ if (!($_SESSION['group'] == 'Администратор' OR $_SESSION['group'] =
         </tr>
     </table>
     <a href="edit.php?id=<? echo $_GET['id']; ?>">Изменить</a>
+    <a href="index.php">К кандидатам</a>
     <?
 }
 require '../template/footer.php';?>
